@@ -1,0 +1,67 @@
+server:
+  port: ${SERVER_PORT:8089}
+
+spring:
+  application:
+    name: artagram-payment
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:db_payment}
+    username: ${DB_USER:artagram}
+    password: ${DB_PASSWORD:artagram}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc.time_zone: UTC
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:artagram}
+    password: ${RABBITMQ_PASSWORD:artagram}
+
+app:
+  jwt:
+    public-key-path: ${JWT_PUBLIC_KEY_PATH:../artagram-infra/secrets-dev/jwt-public.pem}
+    public-key-pem: ${JWT_PUBLIC_KEY_PEM:}
+  cors:
+    allowed-origins: ${CORS_ORIGINS:http://localhost:5173}
+  rabbitmq:
+    exchange: ${RABBITMQ_EXCHANGE:artagram.events}
+  pago:
+    proveedor: ${PAGO_PROVEEDOR:fake}
+    mercadopago-access-token: ${MP_ACCESS_TOKEN:}
+    mercadopago-webhook-secret: ${MERCADOPAGO_WEBHOOK_SECRET:}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    root: INFO
+    com.artagram: DEBUG
