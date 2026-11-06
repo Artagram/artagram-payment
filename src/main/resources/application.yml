@@ -36,6 +36,9 @@ app:
     proveedor: ${PAGO_PROVEEDOR:fake}
     mercadopago-access-token: ${MP_ACCESS_TOKEN:}
     mercadopago-webhook-secret: ${MERCADOPAGO_WEBHOOK_SECRET:}
+    pro-precio: ${PRO_PRECIO:20000}
+    pro-moneda: ${PRO_MONEDA:COP}
+    retorno-url: ${PAGO_RETORNO_URL:http://localhost:5173/suscripcion/resultado}
 
 springdoc:
   swagger-ui:

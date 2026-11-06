@@ -1,6 +1,7 @@
 package com.artagram.payment.billing;
 
 import com.artagram.payment.suscripcion.dto.CheckoutResponse;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -25,5 +26,10 @@ public class FakePagoProvider implements ProveedorPago {
                 ? retornoUrl + "?collection_status=approved&external_reference=" + txId
                 : "/perfil/me?suscripcion=exitosa&tx=" + txId;
         return new CheckoutResponse(url, txId, "FAKE");
+    }
+
+    @Override
+    public Optional<PagoConsultado> consultarPago(String idPago) {
+        return Optional.empty();
     }
 }

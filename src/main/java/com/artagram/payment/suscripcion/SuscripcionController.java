@@ -44,7 +44,7 @@ public class SuscripcionController {
             @RequestParam(required = false, defaultValue = "sim_manual") String tx,
             HttpServletRequest request) {
         var usuario = userResolver.resolverRequerido(request);
-        suscripcionService.procesarPagoAprobado(usuario.usuarioId(), tx);
+        suscripcionService.confirmarSimulado(usuario.usuarioId(), tx);
         return ResponseEntity.ok(Map.of("mensaje", "Suscripción PRO activada exitosamente"));
     }
 }
