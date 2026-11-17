@@ -187,4 +187,24 @@ class SuscripcionServiceTest {
         assertThat(vieja.getEstado()).isEqualTo("EXPIRADA");
         verify(publisher, never()).publicarSuscripcionActualizada(any(), anyBoolean(), anyString());
     }
+
+    @Test
+    void verificarAlVolverDelCheckoutActivaSoloElPagoPropio() {
+        pagoEs("approved", USUARIO.toString(), PRECIO, "COP");
+        service.verificarPago(USUARIO, "1");
+        verify(publisher).publicarSuscripcionActualizada(USUARIO, true, "PRO");
+
+        UUID otro = UUID.randomUUID();
+        assertThatThrownBy(() -> service.verificarPago(otro, "1"))
+                .isInstanceOf(ApiException.class)
+                .hasMessageContaining("no corresponde");
+    }
+
+    @Test
+    void verificarUnPagoInexistenteNoActivaNada() {
+        when(proveedor.consultarPago("1")).thenReturn(Optional.empty());
+
+        assertThat(service.verificarPago(USUARIO, "1")).isFalse();
+        verificarQueNoActivo();
+    }
 }
