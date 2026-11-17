@@ -39,6 +39,12 @@ public class SuscripcionController {
         return ResponseEntity.ok(suscripcionService.crearCheckout(usuario.usuarioId(), req));
     }
 
+    @PostMapping("/verificar")
+    public ResponseEntity<Map<String, Boolean>> verificar(@RequestParam String pagoId, HttpServletRequest request) {
+        var usuario = userResolver.resolverRequerido(request);
+        return ResponseEntity.ok(Map.of("premium", suscripcionService.verificarPago(usuario.usuarioId(), pagoId)));
+    }
+
     @PostMapping("/confirmar")
     public ResponseEntity<Map<String, String>> confirmar(
             @RequestParam(required = false, defaultValue = "sim_manual") String tx,

@@ -90,7 +90,27 @@ public class SuscripcionService {
      */
     @Transactional
     public void procesarNotificacionPago(String idPagoRecibido) {
+        procesarPago(proveedorPago.consultarPago(idPagoRecibido).orElse(null), idPagoRecibido);
+    }
+
+    /**
+     * Lo llama el navegador al volver del checkout con el id del pago, por si
+     * el webhook tarda o no llega. Pasa por las mismas verificaciones del
+     * webhook y además exige que el pago sea de quien pregunta. Devuelve si el
+     * usuario quedó con PRO.
+     */
+    @Transactional
+    public boolean verificarPago(UUID usuarioId, String idPagoRecibido) {
         PagoConsultado pago = proveedorPago.consultarPago(idPagoRecibido).orElse(null);
+        if (pago != null && !usuarioId.toString().equals(pago.referenciaExterna())) {
+            log.warn("Usuario {} intentó verificar un pago ajeno: {}", usuarioId, paraLog(idPagoRecibido));
+            throw ApiException.forbidden("PAGO_AJENO", "Ese pago no corresponde a tu cuenta");
+        }
+        procesarPago(pago, idPagoRecibido);
+        return esPremium(suscripcionActualONueva(usuarioId));
+    }
+
+    private void procesarPago(PagoConsultado pago, String idPagoRecibido) {
         // El id llega por HTTP: se limpian los saltos de línea antes de loguearlo.
         String idPago = paraLog(idPagoRecibido);
         if (pago == null) {

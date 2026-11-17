@@ -62,6 +62,9 @@ class ControladoresTest {
                 .andExpect(status().isOk()).andExpect(jsonPath("$.idTransaccion").value("tx"));
         mvc.perform(post("/api/suscripcion/confirmar")).andExpect(status().isOk());
         verify(service).confirmarSimulado(yo, "sim_manual");
+        when(service.verificarPago(yo, "123")).thenReturn(true);
+        mvc.perform(post("/api/suscripcion/verificar").param("pagoId", "123"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.premium").value(true));
         mvc.perform(get("/internal/payment/" + yo + "/plan")).andExpect(status().isOk()).andExpect(jsonPath("$.maxObras").value(50));
     }
 
