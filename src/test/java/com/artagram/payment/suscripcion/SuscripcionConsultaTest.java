@@ -103,7 +103,10 @@ class SuscripcionConsultaTest {
         campo.set(a, id);
         campo.set(b, id);
 
-        assertThat(a).isEqualTo(a).isEqualTo(b).isNotEqualTo(new Suscripcion()).isNotEqualTo("otro");
+        Object otroTipo = "otro";
+        assertThat(a.equals(a)).isTrue();
+        assertThat(a).isEqualTo(b).isNotEqualTo(new Suscripcion());
+        assertThat(a.equals(otroTipo)).isFalse();
         assertThat(new Suscripcion()).isNotEqualTo(new Suscripcion());
         assertThat(a.hashCode()).isEqualTo(b.hashCode());
     }
