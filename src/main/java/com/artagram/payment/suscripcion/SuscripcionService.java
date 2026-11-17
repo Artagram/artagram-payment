@@ -46,7 +46,9 @@ public class SuscripcionService {
     public SuscripcionService(SuscripcionRepository suscripcionRepo,
                                UsoCuentaRepository usoRepo,
                                PagoProcesadoRepository pagoProcesadoRepo,
-                               ProveedorPago proveedorPago,
+                               // Fake y MercadoPago son excluyentes (@ConditionalOnProperty
+                               // app.pago.proveedor): en ejecución solo existe un bean.
+                               ProveedorPago proveedorPago, // NOSONAR java:S9352
                                PagoProperties pagoProperties,
                                PaymentEventPublisher eventPublisher) {
         this.suscripcionRepo = suscripcionRepo;
@@ -87,8 +89,10 @@ public class SuscripcionService {
      * proveedor reintenta.
      */
     @Transactional
-    public void procesarNotificacionPago(String idPago) {
-        PagoConsultado pago = proveedorPago.consultarPago(idPago).orElse(null);
+    public void procesarNotificacionPago(String idPagoRecibido) {
+        PagoConsultado pago = proveedorPago.consultarPago(idPagoRecibido).orElse(null);
+        // El id llega por HTTP: se limpian los saltos de línea antes de loguearlo.
+        String idPago = paraLog(idPagoRecibido);
         if (pago == null) {
             log.warn("Notificación de un pago inexistente: {}", idPago);
             return;
@@ -99,11 +103,11 @@ public class SuscripcionService {
         }
         Optional<UUID> usuarioId = parsearUsuario(pago.referenciaExterna());
         if (usuarioId.isEmpty()) {
-            log.warn("Pago {} con referencia externa inválida: {}", idPago, pago.referenciaExterna());
+            log.warn("Pago {} con referencia externa inválida: {}", idPago, paraLog(pago.referenciaExterna()));
             return;
         }
         if (!montoCorrecto(pago)) {
-            log.warn("Pago {} con monto inesperado: {} {}", idPago, pago.monto(), pago.moneda());
+            log.warn("Pago {} con monto inesperado: {} {}", idPago, pago.monto(), paraLog(pago.moneda()));
             return;
         }
         if (!pagoProcesadoRepo.registrar(pago.id())) {
@@ -197,5 +201,10 @@ public class SuscripcionService {
     private static boolean esPremium(Suscripcion sub) {
         return "PRO".equals(sub.getPlan()) && ESTADO_ACTIVA.equals(sub.getEstado())
                 && (sub.getFechaFin() == null || sub.getFechaFin().isAfter(Instant.now()));
+    }
+
+    /** Neutraliza CR/LF/TAB para que un valor externo no pueda falsear líneas del log. */
+    private static String paraLog(Object valor) {
+        return valor == null ? null : String.valueOf(valor).replaceAll("[\n\r\t]", "_");
     }
 }
